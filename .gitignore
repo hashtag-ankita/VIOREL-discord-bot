@@ -2,3 +2,5 @@
 config.py
 secrets.json
 /.vscode
+/data
+*.pyc
