@@ -2,4 +2,3 @@
 config.py
 secrets.json
 /.vscode
-discordRichPresence.py
