@@ -12,7 +12,9 @@ class Client(commands.Bot):
     def __init__(self):
         super().__init__(command_prefix=commands.when_mentioned_or('v!'), intents=discord.Intents().all())
 
-        self.cogsList = []
+        self.cogsList = [
+            "cogs.slash-commands.modCommandsCogs"
+            ]
         self.status_messages = [
             {"type": discord.ActivityType.playing, "message": "epic tales and managing server drama"},
             {"type": discord.ActivityType.playing, "message": "and breaking things, one command at a time"},
@@ -42,8 +44,10 @@ class Client(commands.Bot):
     async def setup_hook(self):
         if self.cogsList:
             for ext in self.cogsList:
-                await self.load_extension(ext)
-
+                try:
+                    self.client.load_extension(ext)
+                except Exception as e:
+                    print(f"Failed to load {ext}: {e}")
 
     @tasks.loop(minutes=5)
     async def change_status(self):

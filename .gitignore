@@ -3,3 +3,5 @@ config.py
 secrets.json
 /.vscode
 /data
+/cogs/slash-commands/__pycache__
+/cogs/text-commands/__pycache__
