@@ -45,7 +45,7 @@ class Client(commands.Bot):
         if self.cogsList:
             for ext in self.cogsList:
                 try:
-                    self.client.load_extension(ext)
+                    await self.load_extension(ext)
                 except Exception as e:
                     print(f"Failed to load {ext}: {e}")
 

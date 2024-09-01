@@ -69,45 +69,45 @@ class modCommandsCogs(commands.Cog):
         try:
             await user.ban(reason=reason)
             # Optional: Confirm the action was successful
-            await interaction.response.send_message(f"Successfully banned {user.mention}.", ephemeral=True)
+            await interaction.response.send_message(f"Successfully banned **{user.display_name}**.")
         except discord.Forbidden as e:
             # Handle permission errors
-            await interaction.response.send_message(f"Failed to ban {user.mention} due to permission issues.", ephemeral=True)
-            await interaction.followup.send("Check if you have permissions to ban the person.", ephemeral=True)
+            await interaction.response.send_message(f"Failed to ban **{user.display_name}** due to permission issues.")
+            return
         except discord.HTTPException as e:
             # Handle HTTP-related errors
-            await interaction.response.send_message(f"Failed to ban {user.mention}.", ephemeral=True)
-            await interaction.followup.send("An unknown error occurred. Please try again later.", ephemeral=True)
+            await interaction.response.send_message(f"Failed to ban **{user.display_name}** due to error: `{e}`.")
+            return
         except Exception as e:
             # Handle other unexpected errors
-            await interaction.response.send_message(f"Failed to ban {user.mention}.", ephemeral=True)
-            await interaction.followup.send("An unexpected error occurred. Please contact support if the issue persists.", ephemeral=True)
-
+            await interaction.response.send_message(f"Failed to ban **{user.display_name}** due to an unknown error. Please contact support if the issue persists.")
+            return
 
         try:
             #loading the user_info file
             user_info = self.load_data(self.user_info_path)
 
             #getting guild id, user id and username for searching in the database
-            guild_id = interaction.guild.id
-            user_id = user.id
+            guild_id = str(interaction.guild.id)
+            user_id = str(user.id)
             user_name = user.name
 
             #getting current date and time
-            now = datetime.now()
-            now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            #checking if guild_id is in the database
+            if guild_id not in user_info:
+                user_info[guild_id] = {}
 
             #checking if user is in the database
             if user_id in user_info[guild_id]:
                 numOfBans = user_info[guild_id][user_id]['numOfBans']
-
+                numOfBans = int(numOfBans)
                 #updating the database
-                user_info[guild_id][user_id]['numOfBans'] = numOfBans + 1
+                user_info[guild_id][user_id]['numOfBans'] = numOfBans +1
                 user_info[guild_id][user_id]['datesOfBans'].append(now_str) #adding the date of the ban
                 user_info[guild_id][user_id]['unbanned?'] = False
-
-            #if user is not in the database
-            else:
+            else: #if user is not in the database
                 user_info[guild_id][user_id] = {
                     'username' : user_name,
                     'user_id' : user_id,
@@ -133,18 +133,19 @@ class modCommandsCogs(commands.Cog):
             #sending the embed
             embed = discord.Embed(
                 title="Ban",
-                description=f"**{user_name}** was banned by **{interaction.user.name}** for **{reason}**.")
+                description=f"**{user_name}** was banned by **{interaction.user.name}** for **{reason}**."
+                )
             
-            await interaction.response.send_message(embed=embed)
+            await interaction.followup.send(embed=embed)
         
         except Exception as e:
-            await interaction.response.send_message(f"An error occured: {e}", ephemeral=True)
+            await interaction.followup.send(f"An error occured: {e}", ephemeral=True)
     
 
     @app_commands.command(name="unban", description="Unban a user")
     @app_commands.describe(user="The user to unban")
     @commands.has_permissions(ban_members=True)
-    async def unban(self, interaction: discord.Interaction, user: int):
+    async def unban(self, interaction: discord.Interaction, user: str):
         '''Unban a user'''
 
         # Unbanning the user
